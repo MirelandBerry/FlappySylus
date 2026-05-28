@@ -5,6 +5,16 @@ canvas.width = 400;
 canvas.height = 600;
 
 // =========================
+// 音效资源
+// =========================
+const flapSound = new Audio("sounds/flap.mp3");
+const scoreSound = new Audio("sounds/score.mp3");
+const hitSound = new Audio("sounds/hit.mp3");
+
+// 音量调小
+flapSound.volume = 0.5;
+
+// =========================
 // 图片资源
 // =========================
 
@@ -100,23 +110,20 @@ setInterval(() => {
 // =========================
 
 function flap() {
-
-  // 开始
-  if (!gameStarted) {
-    gameStarted = true;
-  }
-
-  // 跳跃
-  if (!gameOver) {
-
-    bird.velocity = jumpPower;
-  }
-
-  // 重开
-  else {
-
-    location.reload();
-  }
+    // 开始
+    if (!gameStarted) {
+        gameStarted = true;
+    }
+    // 跳跃
+    if (!gameOver) {
+        bird.velocity = jumpPower;
+        flapSound.currentTime = 0; // 进度清零，支持连续快速播放
+        flapSound.play();
+    }
+    // 重开
+    else {
+        location.reload();
+    }
 }
 
 // ======================
@@ -189,13 +196,11 @@ function update() {
   }
 
   // 撞地/天花板
-  if (
-    bird.y < 0 ||
-    bird.y + bird.height >
-    canvas.height - 80
-  ) {
-
-    gameOver = true;
+  if (bird.y < 0 || bird.y + bird.height > canvas.height - 80) {
+      if (!gameOver) {
+          hitSound.play();
+      }
+      gameOver = true;
   }
 
   // 管道
@@ -203,40 +208,26 @@ function update() {
 
     p.x -= 1.5;
 
-    // 得分
-    if (
-      !p.passed &&
-      p.x + p.width < bird.x
-    ) {
+// 得分
+if (!p.passed && p.x + p.width < bird.x) {
+    p.passed = true;
+    score++;
+    scoreSound.currentTime = 0;
+    scoreSound.play(); // 叮！得分
+}
 
-      p.passed = true;
-      score++;
+// 碰撞检测（！！！超级宽松版！！！）
+const margin = 18;
+const hit = bird.x + bird.width - margin > p.x && 
+            bird.x + margin < p.x + p.width && 
+            (bird.y + margin < p.top || bird.y + bird.height - margin > p.bottom);
+
+if (hit) {
+    if (!gameOver) {
+        hitSound.play(); // 撞击瞬间放一次音效
     }
-
-    // =====================
-    // 碰撞检测（宽松版）
-    // =====================
-
-    const margin = 18;
-
-    const hit =
-
-      bird.x + bird.width - margin > p.x &&
-
-      bird.x + margin < p.x + p.width &&
-
-      (
-
-        bird.y + margin < p.top ||
-
-        bird.y + bird.height - margin > p.bottom
-      );
-
-    if (hit) {
-
-      gameOver = true;
-    }
-  });
+    gameOver = true;
+}
 
   // 删除离开屏幕的管道
   pipes = pipes.filter(p => {
