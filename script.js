@@ -210,7 +210,7 @@ function update() {
     }
 
     // 碰撞
-    const margin = 10;
+    const margin = 12;
 
 const hit =
 
