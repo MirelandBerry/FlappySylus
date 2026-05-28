@@ -7,9 +7,9 @@ canvas.height = 600;
 // =========================
 // 音效资源
 // =========================
-const flapSound = new Audio("sounds/flap.mp3");
-const scoreSound = new Audio("sounds/score.mp3");
-const hitSound = new Audio("sounds/hit.mp3");
+const flapSound = new Audio("sounds/flap.wav");
+const scoreSound = new Audio("sounds/score.wav");
+const hitSound = new Audio("sounds/hit.wav");
 
 // 音量调小
 flapSound.volume = 0.5;
