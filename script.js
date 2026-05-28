@@ -45,7 +45,7 @@ const bird = {
 };
 
 const gravity = 0.35;
-const jumpPower = -10;
+const jumpPower = -8;
 
 // =========================
 // 游戏状态
