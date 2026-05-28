@@ -112,26 +112,62 @@ function flap() {
   }
 }
 
+function flap() {
+
+  // 开始游戏
+  if (!gameStarted) {
+    gameStarted = true;
+  }
+
+  // 游戏中
+  if (!gameOver) {
+
+    bird.velocity = jumpPower;
+  }
+
+  // 重开
+  else {
+
+    location.reload();
+  }
+}
+
+// ======================
 // 键盘
+// ======================
+
 document.addEventListener("keydown", (e) => {
 
-  if (e.code === "Space") {
+  if (
+    e.code === "Space" ||
+    e.key === " "
+  ) {
+
+    e.preventDefault();
 
     flap();
   }
 });
 
-// 手机
-canvas.addEventListener("touchstart", (e) => {
+// ======================
+// 手机触摸
+// ======================
+
+document.addEventListener("touchstart", (e) => {
 
   e.preventDefault();
 
   flap();
 
-}, { passive: false });
+}, {
+  passive: false
+});
 
-// 鼠标点击
-canvas.addEventListener("mousedown", () => {
+// ======================
+// 鼠标
+// ======================
+
+document.addEventListener("mousedown", () => {
 
   flap();
 });
