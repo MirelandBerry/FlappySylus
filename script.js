@@ -94,8 +94,47 @@ setInterval(() => {
 // 控制
 // =========================
 
+function flap() {
+
+  // 开始
+  if (!gameStarted) {
+    gameStarted = true;
+  }
+
+  // 跳跃
+  if (!gameOver) {
+    bird.velocity = jumpPower;
+  }
+
+  // 重开
+  else {
+    location.reload();
+  }
+}
+
+// 键盘
 document.addEventListener("keydown", (e) => {
+
   if (e.code === "Space") {
+
+    flap();
+  }
+});
+
+// 手机
+canvas.addEventListener("touchstart", (e) => {
+
+  e.preventDefault();
+
+  flap();
+
+}, { passive: false });
+
+// 鼠标点击
+canvas.addEventListener("mousedown", () => {
+
+  flap();
+});
     if (!gameStarted) gameStarted = true;
 
     if (!gameOver) {
