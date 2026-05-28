@@ -1,0 +1,36 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #70c5ce 0%,
+      #8fd3dc 100%
+    );
+
+  font-family: 'Press Start 2P', cursive;
+}
+
+canvas {
+  border-radius: 18px;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.35);
+
+  image-rendering: pixelated;
+
+  background: #70c5ce;
+}
