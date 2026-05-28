@@ -16,8 +16,10 @@ const GRAVITY = 0.35;
 const JUMP_POWER = -8;
 const PIPE_GAP = 280;
 const PIPE_INTERVAL = 1800;
-const PIPE_SPEED = 1.5;
-const GROUND_SPEED = 2;
+
+let currentPipeSpeed = 1.5;   // 动态初始速度
+let currentGroundSpeed = 2;    // 动态地面速度
+let pipeSpawnCounter = 0; 
 const GROUND_HEIGHT = 80;
 
 // =========================
@@ -98,11 +100,11 @@ function createPipe() {
 // 管道自动生成
 // =========================
 
-setInterval(() => {
-  if (gameStarted && !gameOver) {
-    createPipe();
-  }
-}, PIPE_INTERVAL);
+// setInterval(() => {
+//   if (gameStarted && !gameOver) {
+//     createPipe();
+//   }
+// }, PIPE_INTERVAL);
 
 // =========================
 // 控制逻辑
@@ -152,12 +154,23 @@ canvas.addEventListener("mousedown", () => {
 function update() {
   if (!gameStarted || gameOver) return;
 
+  // 加速逻辑：每得1分速度加0.05，封顶 2.5
+    currentPipeSpeed = 1.5 + Math.min(score * 0.05, 1.0);
+    currentGroundSpeed = currentPipeSpeed * (2 / 1.5); // 地面和管道速度比例同步
+
+    // 距离控制：每移动 180 像素生成一个管道
+    pipeSpawnCounter += currentPipeSpeed;
+    if (pipeSpawnCounter >= 180) {
+        createPipe();
+        pipeSpawnCounter = 0;
+    }
+  
   // 重力和位置更新
   bird.velocity += GRAVITY;
   bird.y += bird.velocity;
 
   // 地面滚动
-  groundX -= GROUND_SPEED;
+  groundX -= currentGroundSpeed;
   if (groundX <= -400) {
     groundX = 0;
   }
@@ -180,7 +193,7 @@ function update() {
 
   // 管道更新和碰撞检测
   pipes.forEach(p => {
-    p.x -= PIPE_SPEED;
+    p.x -= currentPipeSpeed;
 
     // 得分判定
     if (!p.passed && p.x + p.width < bird.x) {
