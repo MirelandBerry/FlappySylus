@@ -68,8 +68,11 @@ let frameTimer = 0;
 // =========================
 
 function createPipe() {
-  const gap = 280;  //管道间隔
-  const topHeight = Math.random() * 250 + 50;
+
+  const gap = 280;
+
+  const topHeight =
+    Math.random() * 250 + 50;
 
   pipes.push({
     x: canvas.width,
@@ -85,9 +88,11 @@ function createPipe() {
 // =========================
 
 setInterval(() => {
+
   if (gameStarted && !gameOver) {
     createPipe();
   }
+
 }, 1800);
 
 // =========================
@@ -102,24 +107,6 @@ function flap() {
   }
 
   // 跳跃
-  if (!gameOver) {
-    bird.velocity = jumpPower;
-  }
-
-  // 重开
-  else {
-    location.reload();
-  }
-}
-
-function flap() {
-
-  // 开始游戏
-  if (!gameStarted) {
-    gameStarted = true;
-  }
-
-  // 游戏中
   if (!gameOver) {
 
     bird.velocity = jumpPower;
@@ -144,7 +131,6 @@ document.addEventListener("keydown", (e) => {
   ) {
 
     e.preventDefault();
-
     flap();
   }
 });
@@ -153,10 +139,9 @@ document.addEventListener("keydown", (e) => {
 // 手机触摸
 // ======================
 
-document.addEventListener("touchstart", (e) => {
+canvas.addEventListener("touchstart", (e) => {
 
   e.preventDefault();
-
   flap();
 
 }, {
@@ -167,7 +152,7 @@ document.addEventListener("touchstart", (e) => {
 // 鼠标
 // ======================
 
-document.addEventListener("mousedown", () => {
+canvas.addEventListener("mousedown", () => {
 
   flap();
 });
@@ -177,6 +162,7 @@ document.addEventListener("mousedown", () => {
 // =========================
 
 function update() {
+
   if (!gameStarted || gameOver) return;
 
   // 重力
@@ -185,47 +171,78 @@ function update() {
 
   // 地面滚动
   groundX -= 2;
-  if (groundX <= -400) groundX = 0;
 
-  // 动画帧
+  if (groundX <= -400) {
+    groundX = 0;
+  }
+
+  // 动画
   frameTimer++;
+
   if (frameTimer > 5) {
-    currentFrame = (currentFrame + 1) % birdFrames.length;
+
+    currentFrame =
+      (currentFrame + 1) %
+      birdFrames.length;
+
     frameTimer = 0;
   }
 
   // 撞地/天花板
-  if (bird.y < 0 || bird.y + bird.height > canvas.height - 80) {
+  if (
+    bird.y < 0 ||
+    bird.y + bird.height >
+    canvas.height - 80
+  ) {
+
     gameOver = true;
   }
 
   // 管道
   pipes.forEach(p => {
+
     p.x -= 1.5;
 
     // 得分
-    if (!p.passed && p.x + p.width < bird.x) {
+    if (
+      !p.passed &&
+      p.x + p.width < bird.x
+    ) {
+
       p.passed = true;
       score++;
     }
 
-    // 碰撞
-    const margin = 12;
+    // =====================
+    // 碰撞检测（宽松版）
+    // =====================
 
-const hit =
+    const margin = 18;
 
-  bird.x + bird.width - margin > p.x &&
+    const hit =
 
-  bird.x + margin < p.x + p.width &&
+      bird.x + bird.width - margin > p.x &&
 
-  (
+      bird.x + margin < p.x + p.width &&
 
-    bird.y + margin < p.top ||
+      (
 
-    bird.y + bird.height - margin > p.bottom
-  );
+        bird.y + margin < p.top ||
 
-  pipes = pipes.filter(p => p.x + p.width > 0);
+        bird.y + bird.height - margin > p.bottom
+      );
+
+    if (hit) {
+
+      gameOver = true;
+    }
+  });
+
+  // 删除离开屏幕的管道
+  pipes = pipes.filter(p => {
+
+    return p.x + p.width > 0;
+  });
 }
 
 // =========================
@@ -233,11 +250,27 @@ const hit =
 // =========================
 
 function drawBackground() {
+
   if (bgImg.complete) {
-    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(
+      bgImg,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
   } else {
+
     ctx.fillStyle = "#70c5ce";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
   }
 }
 
@@ -246,9 +279,24 @@ function drawBackground() {
 // =========================
 
 function drawGround() {
+
   if (groundImg.complete) {
-    ctx.drawImage(groundImg, groundX, 520, 400, 80);
-    ctx.drawImage(groundImg, groundX + 400, 520, 400, 80);
+
+    ctx.drawImage(
+      groundImg,
+      groundX,
+      520,
+      400,
+      80
+    );
+
+    ctx.drawImage(
+      groundImg,
+      groundX + 400,
+      520,
+      400,
+      80
+    );
   }
 }
 
@@ -257,17 +305,22 @@ function drawGround() {
 // =========================
 
 function drawBird() {
+
   const img = birdFrames[currentFrame];
 
   ctx.save();
+
   ctx.translate(
     bird.x + bird.width / 2,
     bird.y + bird.height / 2
   );
 
-  ctx.rotate(bird.velocity * 0.05);
+  ctx.rotate(
+    bird.velocity * 0.05
+  );
 
   if (img && img.complete) {
+
     ctx.drawImage(
       img,
       -bird.width / 2,
@@ -275,8 +328,11 @@ function drawBird() {
       bird.width,
       bird.height
     );
+
   } else {
+
     ctx.fillStyle = "yellow";
+
     ctx.fillRect(
       -bird.width / 2,
       -bird.height / 2,
@@ -289,14 +345,16 @@ function drawBird() {
 }
 
 // =========================
-// 管道（上下分离版）
+// 管道
 // =========================
 
 function drawPipes() {
+
   pipes.forEach(p => {
 
     // 上管道
     if (pipeTopImg.complete) {
+
       ctx.drawImage(
         pipeTopImg,
         p.x,
@@ -304,13 +362,22 @@ function drawPipes() {
         p.width,
         pipeTopImg.height
       );
+
     } else {
+
       ctx.fillStyle = "green";
-      ctx.fillRect(p.x, 0, p.width, p.top);
+
+      ctx.fillRect(
+        p.x,
+        0,
+        p.width,
+        p.top
+      );
     }
 
     // 下管道
     if (pipeBottomImg.complete) {
+
       ctx.drawImage(
         pipeBottomImg,
         p.x,
@@ -318,9 +385,17 @@ function drawPipes() {
         p.width,
         pipeBottomImg.height
       );
+
     } else {
+
       ctx.fillStyle = "green";
-      ctx.fillRect(p.x, p.bottom, p.width, canvas.height);
+
+      ctx.fillRect(
+        p.x,
+        p.bottom,
+        p.width,
+        canvas.height
+      );
     }
   });
 }
@@ -330,54 +405,123 @@ function drawPipes() {
 // =========================
 
 function drawText() {
+
   ctx.fillStyle = "white";
   ctx.strokeStyle = "black";
   ctx.lineWidth = 4;
 
-  // 获取画布宽度用于居中计算
-  const canvasWidth = ctx.canvas.width;
+  const canvasWidth =
+    ctx.canvas.width;
 
-  // 分数显示
-  ctx.font = "16px 'Press Start 2P'";
-  const scoreText = `SCORE: ${score}`;
-  const scoreTextWidth = ctx.measureText(scoreText).width;
-  const scoreX = (canvasWidth - scoreTextWidth) / 2;
-  ctx.strokeText(scoreText, scoreX, 40);
-  ctx.fillText(scoreText, scoreX, 40);
+  // 分数
+  ctx.font =
+    "16px 'Press Start 2P'";
 
+  const scoreText =
+    `SCORE: ${score}`;
+
+  const scoreWidth =
+    ctx.measureText(scoreText).width;
+
+  const scoreX =
+    (canvasWidth - scoreWidth) / 2;
+
+  ctx.strokeText(
+    scoreText,
+    scoreX,
+    40
+  );
+
+  ctx.fillText(
+    scoreText,
+    scoreX,
+    40
+  );
+
+  // 开始
   if (!gameStarted) {
-    ctx.font = "14px 'Press Start 2P'";
-    const startText = "PRESS SPACE";
-    const startTextWidth = ctx.measureText(startText).width;
-    const startX = (canvasWidth - startTextWidth) / 2;
-    ctx.strokeText(startText, startX, 280);
-    ctx.fillText(startText, startX, 280);
+
+    ctx.font =
+      "14px 'Press Start 2P'";
+
+    const text =
+      "PRESS SPACE";
+
+    const width =
+      ctx.measureText(text).width;
+
+    ctx.strokeText(
+      text,
+      (canvasWidth - width) / 2,
+      280
+    );
+
+    ctx.fillText(
+      text,
+      (canvasWidth - width) / 2,
+      280
+    );
   }
 
+  // Game Over
   if (gameOver) {
-    ctx.font = "14px 'Press Start 2P'";
-    const gameOverText = "GAME OVER";
-    const gameOverTextWidth = ctx.measureText(gameOverText).width;
-    const gameOverX = (canvasWidth - gameOverTextWidth) / 2;
-    ctx.strokeText(gameOverText, gameOverX, 260);
-    ctx.fillText(gameOverText, gameOverX, 260);
 
-    ctx.font = "10px 'Press Start 2P'";
-    const restartText = "SPACE TO RESTART";
-    const restartTextWidth = ctx.measureText(restartText).width;
-    const restartX = (canvasWidth - restartTextWidth) / 2;
-    ctx.strokeText(restartText, restartX, 320);
-    ctx.fillText(restartText, restartX, 320);
+    ctx.font =
+      "14px 'Press Start 2P'";
+
+    const text =
+      "GAME OVER";
+
+    const width =
+      ctx.measureText(text).width;
+
+    ctx.strokeText(
+      text,
+      (canvasWidth - width) / 2,
+      260
+    );
+
+    ctx.fillText(
+      text,
+      (canvasWidth - width) / 2,
+      260
+    );
+
+    ctx.font =
+      "10px 'Press Start 2P'";
+
+    const restart =
+      "SPACE TO RESTART";
+
+    const restartWidth =
+      ctx.measureText(restart).width;
+
+    ctx.strokeText(
+      restart,
+      (canvasWidth - restartWidth) / 2,
+      320
+    );
+
+    ctx.fillText(
+      restart,
+      (canvasWidth - restartWidth) / 2,
+      320
+    );
   }
 }
-
 
 // =========================
 // draw
 // =========================
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
   drawBackground();
   drawPipes();
@@ -391,8 +535,10 @@ function draw() {
 // =========================
 
 function loop() {
+
   update();
   draw();
+
   requestAnimationFrame(loop);
 }
 
