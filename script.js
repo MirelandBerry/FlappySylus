@@ -1,7 +1,3 @@
-// =========================
-// 初始化 Canvas
-// =========================
-
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -79,6 +75,65 @@ let gameOver = false;
 let groundX = 0;
 let currentFrame = 0;
 let frameTimer = 0;
+let leaderboardUpdated = false; 
+
+// =========================
+// 街机排行榜
+// =========================
+
+function getPlayerName() {
+    let name = sessionStorage.getItem("currentPlayer");
+    if (!name) {
+        name = prompt("请输入你的名字 (中文8个字以内，英文12个字以内):");
+        if (!name || name.trim() === "") {
+            name = "玩家";
+        }
+        // 计算字符长度：汉字按2计，英文按1计
+        let charCount = 0;
+        let result = "";
+        for (let char of name) {
+            let charLen = /[\u4e00-\u9fff]/.test(char) ? 2 : 1;
+            if (charCount + charLen <= 16) {
+                result += char;
+                charCount += charLen;
+            } else {
+                break;
+            }
+        }
+        name = result.toUpperCase();
+        sessionStorage.setItem("currentPlayer", name);
+    }
+    return name;
+}
+
+function updateLeaderboard(finalScore) {
+    const playerName = getPlayerName();
+    let leaderboard = JSON.parse(localStorage.getItem("arcade_leaderboard")) || [];
+    
+    leaderboard.push({ name: playerName, score: finalScore });
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 5);
+    
+    localStorage.setItem("arcade_leaderboard", JSON.stringify(leaderboard));
+}
+
+function drawLeaderboard(ctx) {
+    let leaderboard = JSON.parse(localStorage.getItem("arcade_leaderboard")) || [];
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(60, 350, 280, 180);
+    
+    ctx.fillStyle = "yellow";
+    ctx.font = "12px 'Press Start 2P'";
+    ctx.fillText("=== TOP 5 ===", 130, 380);
+    
+    ctx.fillStyle = "white";
+    leaderboard.forEach((entry, index) => {
+        let yItem = 410 + index * 24;
+        ctx.fillText(`${index + 1}. ${entry.name}`, 90, yItem);
+        ctx.fillText(`${entry.score}`, 270, yItem);
+    });
+}
 
 // =========================
 // 生成管道
@@ -95,16 +150,6 @@ function createPipe() {
     passed: false
   });
 }
-
-// =========================
-// 管道自动生成
-// =========================
-
-// setInterval(() => {
-//   if (gameStarted && !gameOver) {
-//     createPipe();
-//   }
-// }, PIPE_INTERVAL);
 
 // =========================
 // 控制逻辑
@@ -128,7 +173,6 @@ function flap() {
 // 事件监听
 // =========================
 
-// 键盘
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space" || e.key === " ") {
     e.preventDefault();
@@ -136,13 +180,11 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 触摸
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   flap();
 }, { passive: false });
 
-// 鼠标
 canvas.addEventListener("mousedown", () => {
   flap();
 });
@@ -154,48 +196,41 @@ canvas.addEventListener("mousedown", () => {
 function update() {
   if (!gameStarted || gameOver) return;
 
-  // 加速逻辑：每得1分速度加0.05，封顶 2.5
-    currentPipeSpeed = 1.5 + Math.min(score * 0.05, 1.0);
-    currentGroundSpeed = currentPipeSpeed * (2 / 1.5); // 地面和管道速度比例同步
+  currentPipeSpeed = 1.5 + Math.min(score * 0.05, 1.0);
+  currentGroundSpeed = currentPipeSpeed * (2 / 1.5);
 
-    // 距离控制：每移动 180 像素生成一个管道
-    pipeSpawnCounter += currentPipeSpeed;
-    if (pipeSpawnCounter >= 180) {
-        createPipe();
-        pipeSpawnCounter = 0;
-    }
+  pipeSpawnCounter += currentPipeSpeed;
+  if (pipeSpawnCounter >= 180) {
+    createPipe();
+    pipeSpawnCounter = 0;
+  }
   
-  // 重力和位置更新
   bird.velocity += GRAVITY;
   bird.y += bird.velocity;
 
-  // 地面滚动
   groundX -= currentGroundSpeed;
   if (groundX <= -400) {
     groundX = 0;
   }
 
-  // 鸟动画更新
   frameTimer++;
   if (frameTimer > 5) {
     currentFrame = (currentFrame + 1) % birdFrames.length;
     frameTimer = 0;
   }
 
-  // 碰撞检测：地面和天花板
   if (bird.y < 0 || bird.y + bird.height > canvas.height - GROUND_HEIGHT) {
     if (!gameOver) {
       hitSound.play();
+      gameOver = true;
+      updateLeaderboard(score);
     }
-    gameOver = true;
     return;
   }
 
-  // 管道更新和碰撞检测
   pipes.forEach(p => {
     p.x -= currentPipeSpeed;
 
-    // 得分判定
     if (!p.passed && p.x + p.width < bird.x) {
       p.passed = true;
       score++;
@@ -203,7 +238,6 @@ function update() {
       scoreSound.play();
     }
 
-    // 碰撞检测
     const margin = 18;
     const hit =
       bird.x + bird.width - margin > p.x &&
@@ -213,12 +247,12 @@ function update() {
     if (hit) {
       if (!gameOver) {
         hitSound.play();
+        gameOver = true;
+        updateLeaderboard(score);
       }
-      gameOver = true;
     }
   });
 
-  // 清理离开屏幕的管道
   pipes = pipes.filter(p => p.x + p.width > 0);
 }
 
@@ -261,7 +295,6 @@ function drawBird() {
 
 function drawPipes() {
   pipes.forEach(p => {
-    // 上管道
     if (pipeTopImg.complete) {
       ctx.drawImage(pipeTopImg, p.x, p.top - pipeTopImg.height, p.width, pipeTopImg.height);
     } else {
@@ -269,7 +302,6 @@ function drawPipes() {
       ctx.fillRect(p.x, 0, p.width, p.top);
     }
 
-    // 下管道
     if (pipeBottomImg.complete) {
       ctx.drawImage(pipeBottomImg, p.x, p.bottom, p.width, pipeBottomImg.height);
     } else {
@@ -286,7 +318,6 @@ function drawText() {
 
   const canvasWidth = ctx.canvas.width;
 
-  // 分数
   ctx.font = "16px 'Press Start 2P'";
   const scoreText = `SCORE: ${score}`;
   const scoreWidth = ctx.measureText(scoreText).width;
@@ -295,7 +326,6 @@ function drawText() {
   ctx.strokeText(scoreText, scoreX, 40);
   ctx.fillText(scoreText, scoreX, 40);
 
-  // 开始提示
   if (!gameStarted) {
     ctx.font = "14px 'Press Start 2P'";
     const text = "PRESS SPACE";
@@ -305,21 +335,20 @@ function drawText() {
     ctx.fillText(text, (canvasWidth - width) / 2, 280);
   }
 
-  // Game Over
   if (gameOver) {
     ctx.font = "14px 'Press Start 2P'";
     const text = "GAME OVER";
     const width = ctx.measureText(text).width;
-
-    ctx.strokeText(text, (canvasWidth - width) / 2, 260);
-    ctx.fillText(text, (canvasWidth - width) / 2, 260);
+    ctx.strokeText(text, (canvasWidth - width) / 2, 230);
+    ctx.fillText(text, (canvasWidth - width) / 2, 230);
 
     ctx.font = "10px 'Press Start 2P'";
     const restart = "SPACE TO RESTART";
     const restartWidth = ctx.measureText(restart).width;
-
-    ctx.strokeText(restart, (canvasWidth - restartWidth) / 2, 320);
-    ctx.fillText(restart, (canvasWidth - restartWidth) / 2, 320);
+    ctx.strokeText(restart, (canvasWidth - restartWidth) / 2, 270);
+    ctx.fillText(restart, (canvasWidth - restartWidth) / 2, 270);
+    
+    drawLeaderboard(ctx);
   }
 }
 
