@@ -45,7 +45,7 @@ const bird = {
 };
 
 const gravity = 0.35;
-const jumpPower = -9;
+const jumpPower = -11;
 
 // =========================
 // 游戏状态
@@ -73,7 +73,7 @@ function createPipe() {
 
   pipes.push({
     x: canvas.width,
-    width: 70,
+    width: 60,
     top: topHeight,
     bottom: topHeight + gap,
     passed: false
