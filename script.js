@@ -135,15 +135,6 @@ canvas.addEventListener("mousedown", () => {
 
   flap();
 });
-    if (!gameStarted) gameStarted = true;
-
-    if (!gameOver) {
-      bird.velocity = jumpPower;
-    } else {
-      location.reload();
-    }
-  }
-});
 
 // =========================
 // 更新逻辑
