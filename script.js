@@ -45,7 +45,7 @@ const bird = {
 };
 
 const gravity = 0.35;
-const jumpPower = -11;
+const jumpPower = -10;
 
 // =========================
 // 游戏状态
@@ -210,13 +210,20 @@ function update() {
     }
 
     // 碰撞
-    const hit =
-      bird.x + bird.width > p.x &&
-      bird.x < p.x + p.width &&
-      (bird.y < p.top || bird.y + bird.height > p.bottom);
+    const margin = 10;
 
-    if (hit) gameOver = true;
-  });
+const hit =
+
+  bird.x + bird.width - margin > p.x &&
+
+  bird.x + margin < p.x + p.width &&
+
+  (
+
+    bird.y + margin < p.top ||
+
+    bird.y + bird.height - margin > p.bottom
+  );
 
   pipes = pipes.filter(p => p.x + p.width > 0);
 }
